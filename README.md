@@ -134,3 +134,7 @@ For a playback report, include your device model, OS version, TorNest version, t
 ## Content and sharing
 
 Use TorNest with video you have permission to download and share. Streaming over BitTorrent can redistribute pieces of that video, so permission to view a work alone may not cover sharing it. Catalogue publishers are responsible for checking the rights to the sources they distribute. TorNest does not bundle video files or establish the rights to a work by listing it.
+
+## Contributing
+
+Bug reports, documentation improvements, and code contributions are welcome. Read the [contribution guidelines](CONTRIBUTING.md) before opening an issue or pull request. For larger changes, open an issue first so we can agree on the approach.

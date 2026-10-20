@@ -40,9 +40,10 @@ temp-fetch/
 *.seed
 
 # This repo is public. Every Markdown file (plans, working notes, reports, runbooks) stays local;
-# only the README and the public developer guide are published.
+# only the README, contribution guidelines, and public developer guide are published.
 *.md
 !/README.md
+!/CONTRIBUTING.md
 !/docs/DEVELOPMENT.md
 !/scripts/publish-catalog/README.md
 torfilx-release.jks.txt
