@@ -124,6 +124,8 @@ fun SearchScreen(
                         .focusRestorer(),
                     // Room for a focused poster in the first row to rise, with its frame.
                     contentPadding = PaddingValues(
+                        start = 10.dp,
+                        end = 10.dp,
                         top = dimens.focusLift + dimens.focusFrameGap + dimens.focusFrame + 6.dp,
                         bottom = 24.dp,
                     ),
@@ -206,4 +208,4 @@ private val KEYBOARD_COLUMN_WIDTH = 330.dp
 private const val RESULT_COLUMNS = 3
 
 /** Recent searches that fit the pane with "Clear history" below them (about 45 dp each of ~400 dp). */
-private const val RECENT_SHOWN = 5
+private const val RECENT_SHOWN = 4

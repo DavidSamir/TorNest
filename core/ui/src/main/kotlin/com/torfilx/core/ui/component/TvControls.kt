@@ -22,32 +22,14 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import androidx.tv.material3.Text
 import com.torfilx.core.common.log.TorfilxLog
-import com.torfilx.core.ui.theme.LocalTorfilxDimens
 import com.torfilx.core.ui.theme.TorfilxColors
-import com.torfilx.core.ui.theme.TorfilxMotion
 import com.torfilx.core.ui.theme.TorfilxShapes
-import com.torfilx.core.ui.theme.TorfilxType
 import com.torfilx.core.ui.theme.animateFocus
-import com.torfilx.core.ui.theme.focusNudge
-import com.torfilx.core.ui.theme.focusUnderline
-import com.torfilx.core.ui.theme.ruleBelow
+import com.torfilx.core.ui.theme.focusFrame
+import com.torfilx.core.ui.theme.focusLift
 
-/** How far a focused link's arrow moves along. */
-private val ARROW_NUDGE = 6.dp
-
-/**
- * The button used in dialogs, menus, settings and the player: a hairline box with its label in spaced
- * capitals.
- *
- * Focus fills it with ivory and turns the label ink, at once — an inverted box reads from across a
- * room, and a control that has to be found should not wait on an animation. [primary] draws the
- * outline in ivory rather than as a faint rule.
- *
- * Built directly on `clickable` rather than a Material button so every control in the app is focused
- * the same way (plan.md §4).
- */
+/** Rounded, high-contrast action. Only the drawn child scales; the D-pad target never moves. */
 @Composable
 fun TvButton(
     text: String,
@@ -59,44 +41,37 @@ fun TvButton(
     leadingIcon: (@Composable () -> Unit)? = null,
     focusRequester: FocusRequester? = null,
 ) {
-    val dimens = LocalTorfilxDimens.current
-    val interactionSource = remember { MutableInteractionSource() }
-    val isFocused by interactionSource.collectIsFocusedAsState()
+    val interaction = remember { MutableInteractionSource() }
+    val focused by interaction.collectIsFocusedAsState()
+    val focus = animateFocus(focused && enabled, label = "buttonFocus")
     val requester = focusRequester ?: remember { FocusRequester() }
     AutoFocus(requester, autoFocus && enabled, text)
-
-    val fill = if (isFocused && enabled) TorfilxColors.Accent else TorfilxColors.Transparent
-    val outline = when {
-        isFocused && enabled -> TorfilxColors.Accent
-        primary && enabled -> TorfilxColors.FocusFrame
-        else -> TorfilxColors.Rule
+    val filled = enabled && (primary || focused)
+    val fill = when {
+        !enabled -> TorfilxColors.SurfaceLow
+        filled -> TorfilxColors.Accent
+        else -> TorfilxColors.SurfaceHigh
     }
     val content = when {
         !enabled -> TorfilxColors.TextDisabled
-        isFocused -> TorfilxColors.TextOnAccent
-        primary -> TorfilxColors.TextPrimary
-        else -> TorfilxColors.TextSecondary
+        filled -> TorfilxColors.TextOnAccent
+        else -> TorfilxColors.TextPrimary
     }
-
     Box(
         modifier = modifier
-            .background(fill, TorfilxShapes.Control)
-            .border(dimens.hairline, outline, TorfilxShapes.Control)
             .focusRequester(requester)
-            // `clickable` already makes the node focusable AND handles DPAD_CENTER/Enter. A separate
-            // `focusable()` steals the focus target, so the control highlights but OK does nothing —
-            // the classic "the remote is dead" bug on TV.
-            .clickable(
-                enabled = enabled,
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onClick,
-            )
-            .semantics { role = Role.Button }
-            .padding(horizontal = 22.dp, vertical = 12.dp),
+            // clickable owns both focus and OK handling. A second focusable node would steal OK.
+            .clickable(enabled = enabled, interactionSource = interaction, indication = null, onClick = onClick)
+            .semantics { role = Role.Button },
         contentAlignment = Alignment.Center,
+        propagateMinConstraints = true,
     ) {
         Row(
+            modifier = Modifier
+                .focusLift(focus, 0.dp)
+                .focusFrame(focus, 1.5.dp, 3.dp)
+                .background(fill, TorfilxShapes.Control)
+                .padding(horizontal = 22.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
@@ -106,12 +81,7 @@ fun TvButton(
     }
 }
 
-/**
- * An action set as a line of type, for the hero and the details spread: "PLAY EPISODE ONE →".
- *
- * At rest it is a dim label. Focus brightens it at once, then an underline draws across beneath it and
- * the [arrow], if any, steps forward. The movement is drawn, not laid out, so it costs no recomposition.
- */
+/** Shared action styling for heroes, detail screens, search history, and retry actions. */
 @Composable
 fun TvTextLink(
     text: String,
@@ -122,47 +92,18 @@ fun TvTextLink(
     autoFocus: Boolean = false,
     focusRequester: FocusRequester? = null,
 ) {
-    val dimens = LocalTorfilxDimens.current
-    val interactionSource = remember { MutableInteractionSource() }
-    val isFocused by interactionSource.collectIsFocusedAsState()
-    val focus = animateFocus(isFocused, label = "linkFocus")
-    val requester = focusRequester ?: remember { FocusRequester() }
-    AutoFocus(requester, autoFocus && enabled, text)
-
-    val color = when {
-        !enabled -> TorfilxColors.TextDisabled
-        isFocused -> TorfilxColors.TextPrimary
-        else -> TorfilxColors.TextTertiary
-    }
-
-    Row(
-        modifier = modifier
-            .focusRequester(requester)
-            .clickable(enabled = enabled, interactionSource = interactionSource, indication = null, onClick = onClick)
-            .semantics { role = Role.Button }
-            .focusUnderline(focus, dimens.underline)
-            .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        CapsText(text = text, color = color)
-        if (arrow) {
-            Text(
-                text = "→",
-                style = TorfilxType.LabelCaps,
-                color = color,
-                modifier = Modifier.focusNudge(focus, ARROW_NUDGE),
-            )
-        }
-    }
+    TvButton(
+        text = text,
+        onClick = onClick,
+        modifier = modifier,
+        primary = arrow,
+        enabled = enabled,
+        autoFocus = autoFocus,
+        focusRequester = focusRequester,
+    )
 }
 
-/**
- * A choice among several — a sort order, a season, a subtitle track — set as a spaced label.
- *
- * The chosen one is ivory with a fine rule under it; the others are dim. Focus brightens a chip and
- * draws a full underline across it, so the focused chip and the chosen one never look alike.
- */
+/** Selected and focused are separate: selection persists; a white pill marks the current D-pad target. */
 @Composable
 fun TvChip(
     text: String,
@@ -170,33 +111,35 @@ fun TvChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val dimens = LocalTorfilxDimens.current
-    val interactionSource = remember { MutableInteractionSource() }
-    val isFocused by interactionSource.collectIsFocusedAsState()
-    val focus = animateFocus(isFocused, durationMs = TorfilxMotion.FOCUS_MS, label = "chipFocus")
-
+    val interaction = remember { MutableInteractionSource() }
+    val focused by interaction.collectIsFocusedAsState()
     Box(
         modifier = modifier
-            .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
-            // So VoiceView announces the selected state, not just the label.
-            .semantics {
-                this.selected = selected
-                this.role = Role.Tab
-            }
-            .padding(horizontal = 12.dp, vertical = 6.dp),
+            .background(
+                when {
+                    focused -> TorfilxColors.Accent
+                    selected -> TorfilxColors.SurfaceHighest
+                    else -> TorfilxColors.Transparent
+                },
+                TorfilxShapes.Pill,
+            )
+            .border(1.dp, if (focused) TorfilxColors.Focus else TorfilxColors.Transparent, TorfilxShapes.Pill)
+            .clickable(interactionSource = interaction, indication = null, onClick = onClick)
+            .semantics { this.selected = selected; role = Role.Tab }
+            .padding(horizontal = 16.dp, vertical = 9.dp),
+        contentAlignment = Alignment.Center,
     ) {
         CapsText(
             text = text,
-            color = if (isFocused || selected) TorfilxColors.TextPrimary else TorfilxColors.TextTertiary,
-            modifier = Modifier
-                .then(if (selected) Modifier.ruleBelow(dimens.hairline, TorfilxColors.TextTertiary) else Modifier)
-                .focusUnderline(focus, dimens.underline)
-                .padding(bottom = 6.dp),
+            color = when {
+                focused -> TorfilxColors.TextOnAccent
+                selected -> TorfilxColors.TextPrimary
+                else -> TorfilxColors.TextSecondary
+            },
         )
     }
 }
 
-/** Takes focus when [enabled] becomes true. */
 @Composable
 private fun AutoFocus(requester: FocusRequester, enabled: Boolean, name: String) {
     LaunchedEffect(enabled) {

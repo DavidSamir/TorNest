@@ -1,10 +1,5 @@
 package com.torfilx.core.ui.component
 
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,26 +13,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
-import com.torfilx.core.ui.theme.LocalReduceMotion
 import com.torfilx.core.ui.theme.LocalTorfilxDimens
 import com.torfilx.core.ui.theme.TorfilxColors
 import com.torfilx.core.ui.theme.TorfilxType
-import com.torfilx.core.ui.theme.ruleAbove
-
-/** Midway through the pulse, so a still placeholder looks the same as a moving one on average. */
-private const val SKELETON_STATIC_ALPHA = 0.5f
 
 /**
  * Skeleton placeholder.
@@ -51,26 +37,10 @@ fun SkeletonBox(
     height: Dp,
     modifier: Modifier = Modifier,
 ) {
-    // A pulse redraws every frame for as long as a row is loading; with reduce motion it holds still.
-    val alpha: State<Float> = if (LocalReduceMotion.current) {
-        remember { mutableFloatStateOf(SKELETON_STATIC_ALPHA) }
-    } else {
-        rememberInfiniteTransition(label = "skeleton").animateFloat(
-            initialValue = 0.35f,
-            targetValue = 0.65f,
-            animationSpec = infiniteRepeatable(tween(1200), RepeatMode.Reverse),
-            label = "skeletonAlpha",
-        )
-    }
-    // The pulse is read in the draw phase, so each of its frames is a redraw and not a recomposition.
-    Box(
-        modifier = modifier
-            .width(width)
-            .height(height)
-            .drawBehind { drawRect(TorfilxColors.SurfaceHigh, alpha = alpha.value) },
-    )
+    // Static placeholders avoid dozens of independent infinite animation clocks during startup.
+    Box(modifier = modifier.width(width).height(height)
+        .background(TorfilxColors.SurfaceHigh, com.torfilx.core.ui.theme.TorfilxShapes.Card))
 }
-
 /**
  * A whole section of skeletons, used while Home is loading: the header's rule and title, then cards
  * with their two caption lines.
@@ -87,7 +57,6 @@ fun SkeletonRow(
             Modifier
                 .fillMaxWidth()
                 .padding(horizontal = dimens.overscanHorizontal)
-                .ruleAbove(dimens.hairline)
                 .padding(top = 18.dp),
         ) {
             SkeletonBox(width = 200.dp, height = 22.dp)

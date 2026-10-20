@@ -1,6 +1,7 @@
 package com.torfilx.core.ui.component
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
 import com.torfilx.core.ui.theme.LocalTorfilxDimens
@@ -44,7 +46,9 @@ fun SharingConsentDialog(
         Column(
             modifier = Modifier
                 .width(760.dp)
-                .panel(LocalTorfilxDimens.current.hairline),
+                .panel(LocalTorfilxDimens.current.hairline)
+                .focusProperties { onExit = { cancelFocusChange() } }
+                .focusGroup(),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             Kicker(text = "Before you watch")

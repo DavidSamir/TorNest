@@ -173,6 +173,16 @@ private fun FilterBar(
             .focusGroup(),
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
+        Text(
+            text = when (state.mode) {
+                LibraryMode.SHOWS -> "Shows"
+                LibraryMode.MY_LIST -> "My List"
+                else -> "Movies"
+            },
+            style = TorfilxType.Headline,
+            color = TorfilxColors.TextPrimary,
+            modifier = Modifier.padding(horizontal = dimens.overscanHorizontal).padding(bottom = 8.dp),
+        )
         // The total and the build are on screen on purpose, and together.
         //
         // "Some of the movies are missing" was impossible to pin down from the sofa because three

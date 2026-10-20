@@ -16,13 +16,13 @@ import androidx.compose.runtime.staticCompositionLocalOf
  */
 object TorfilxMotion {
     /** Short moves that follow focus: a label's arrow, a chip's underline. */
-    const val FOCUS_MS = 220
+    const val FOCUS_MS = 150
 
     /** Longer moves that follow focus: a poster lifting, a link's underline drawing across. */
-    const val SETTLE_MS = 350
+    const val SETTLE_MS = 180
 
     /** One featured title giving way to the next. */
-    const val CROSSFADE_MS = 450
+    const val CROSSFADE_MS = 180
 
     /** Starts at once and lands softly. */
     val Ease: Easing = CubicBezierEasing(0.3f, 0.7f, 0.1f, 1f)

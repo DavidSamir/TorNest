@@ -44,8 +44,6 @@ import com.torfilx.core.ui.theme.TorfilxType
 import com.torfilx.core.ui.theme.animateFocus
 import com.torfilx.core.ui.theme.focusNudge
 import com.torfilx.core.ui.theme.focusRowMark
-import com.torfilx.core.ui.theme.ruleAbove
-import com.torfilx.core.ui.theme.ruleBelow
 import com.torfilx.core.ui.util.Format
 
 private val EPISODE_NUMBER_WIDTH = 44.dp
@@ -128,8 +126,8 @@ fun EpisodeRow(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = dimens.overscanHorizontal)
-            .then(if (first) Modifier.ruleAbove(dimens.hairline) else Modifier)
-            .ruleBelow(dimens.hairline)
+            .padding(vertical = 4.dp)
+            .background(TorfilxColors.SurfaceLow, TorfilxShapes.Control)
             .focusRowMark(focus, dimens.underline)
             .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
             .clickable(interactionSource = interaction, indication = null, onClick = onClick)

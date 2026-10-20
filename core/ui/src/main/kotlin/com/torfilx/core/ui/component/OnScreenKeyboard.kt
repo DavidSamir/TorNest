@@ -28,7 +28,6 @@ import com.torfilx.core.ui.theme.LocalTorfilxDimens
 import com.torfilx.core.ui.theme.TorfilxColors
 import com.torfilx.core.ui.theme.TorfilxShapes
 import com.torfilx.core.ui.theme.TorfilxType
-import com.torfilx.core.ui.theme.ruleBelow
 
 /** Which character set the on-screen keyboard is showing. */
 enum class KeyboardLayout(val label: String) {
@@ -133,8 +132,8 @@ private fun KeyboardKey(
     Box(
         modifier = modifier
             .size(width = width, height = KEY_HEIGHT)
-            .background(if (isFocused) TorfilxColors.Accent else TorfilxColors.Transparent, TorfilxShapes.Control)
-            .border(hairline, if (isFocused) TorfilxColors.Accent else TorfilxColors.Rule, TorfilxShapes.Control)
+            .background(if (isFocused) TorfilxColors.Accent else TorfilxColors.SurfaceHigh, TorfilxShapes.Control)
+            .border(hairline, if (isFocused) TorfilxColors.Accent else TorfilxColors.Transparent, TorfilxShapes.Control)
             .then(focusRequester?.let { Modifier.focusRequester(it) } ?: Modifier)
             .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
             .semantics { contentDescription = description ?: label },
@@ -162,13 +161,13 @@ fun SearchField(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .ruleBelow(LocalTorfilxDimens.current.hairline, TorfilxColors.TextTertiary)
+            .background(TorfilxColors.SurfaceHigh, TorfilxShapes.Control)
             // Announce it as the search field and read back the current query for VoiceView, which
             // otherwise sees only a static Text.
             .semantics {
                 contentDescription = if (value.isEmpty()) placeholder else "Search: $value"
             }
-            .padding(vertical = 10.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
         Text(
             text = value.ifEmpty { placeholder },

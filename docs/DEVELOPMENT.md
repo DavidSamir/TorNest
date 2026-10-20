@@ -18,7 +18,18 @@ GitHub Pages must use **GitHub Actions** as its source under repository **Settin
 
 The default public address is `https://davidsamir.github.io/TorNest/`. If the address changes, set `SITE_URL` when building and update links to the website. The build uses that URL for canonicals, social metadata, the sitemap, and the 404 page. For search reporting, verify the website's URL prefix with Google Search Console and Bing Webmaster Tools, then submit `sitemap.xml`. No analytics or tracking scripts are included by default.
 
+## TV interface
+
+The app uses a cinematic browsing design: bundled Inter typography, neutral dark surfaces, rounded cards and controls, pill navigation, and artwork-led hero and detail screens. Shared tokens live in `core/ui/.../theme`; features should use those roles rather than introduce their own fonts, colors, or focus treatment.
+
+Focus animation scales only the drawn card or button, leaving its navigation bounds in place. Read animation state inside drawing/layer lambdas, honor Reduce motion, and keep the lazy layouts' stable keys and focus restoration. Artwork decoding is capped at 1280 by 720 pixels, including on 4K displays. The hero advances manually; loading placeholders are static. Avoid live blur, background video previews, and continuous decorative animations on the legacy Fire TV path.
+
+Run the UI interaction tests with `./gradlew :core:ui:testDebugUnitTest`. `TvDesignTest` uses Robolectric native graphics at a TV-sized viewport to check D-pad activation, selected versus focused navigation, card focus geometry, keyboard input, and modal focus containment. It renders component previews into `core/ui/build/ui-previews/` with illustrative test titles. These are component checks, not evidence of real-device playback or frame-rate performance.
+
+Before shipping a visual redesign, test cold startup, fast row/grid navigation, return focus after Details, long title/episode lists, seek controls, and playback with overlays on both an older Fire TV and a modern device. Compare frame timing and memory against the previous release while streaming; a desktop test pass does not establish a device performance result.
+
 ## Catalogue format
+
 
 A new install starts from `core/data/src/main/assets/catalog.json`, described by
 `catalog-manifest.json` beside it. From then on the app keeps the catalogue current from the peer

@@ -20,24 +20,24 @@ data class TorfilxDimens(
     val overscanVertical: Dp = 27.dp,
 
     // Rhythm: the space between rows on a page, and between cards in a row.
-    val rowSpacing: Dp = 40.dp,
-    val cardSpacing: Dp = 24.dp,
+    val rowSpacing: Dp = 32.dp,
+    val cardSpacing: Dp = 20.dp,
 
     // Cards. A caption sits under every card, [captionGap] below it.
-    val posterWidth: Dp = 150.dp,
-    val posterHeight: Dp = 225.dp,
+    val posterWidth: Dp = 144.dp,
+    val posterHeight: Dp = 216.dp,
     val landscapeWidth: Dp = 240.dp,
     val landscapeHeight: Dp = 135.dp,
-    val captionGap: Dp = 12.dp,
+    val captionGap: Dp = 10.dp,
 
     // Lines: section and table rules, and the underline under a focused label.
     val hairline: Dp = 1.dp,
     val underline: Dp = 2.dp,
 
     // Focus on a card: it rises by [focusLift], and a frame [focusFrame] thick stands [focusFrameGap] off it.
-    val focusLift: Dp = 6.dp,
-    val focusFrame: Dp = 1.5.dp,
-    val focusFrameGap: Dp = 6.dp,
+    val focusLift: Dp = 2.dp,
+    val focusFrame: Dp = 2.dp,
+    val focusFrameGap: Dp = 3.dp,
 )
 
 val LocalTorfilxDimens = staticCompositionLocalOf { TorfilxDimens() }

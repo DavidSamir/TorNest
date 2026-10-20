@@ -1,6 +1,7 @@
 package com.torfilx.feature.settings
 
-import androidx.compose.foundation.border
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -61,7 +63,7 @@ import kotlinx.coroutines.delay
 internal val ROW_INSET = 20.dp
 
 /** A chip's own side padding, by which a set of chips is pulled left to line its text up. */
-private val CHIP_TEXT_INSET = 12.dp
+private val CHIP_TEXT_INSET = 16.dp
 
 
 /** How long a destructive row waits for its second press before it forgets the first. */
@@ -85,7 +87,8 @@ internal fun SettingsRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .ruleBelow(dimens.hairline)
+            .padding(vertical = 3.dp)
+            .background(TorfilxColors.SurfaceLow, TorfilxShapes.Control)
             .focusRowMark(focus, dimens.underline)
             .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
             // `clickable` is the focus target and handles DPAD_CENTER; see TvButton for why there is
@@ -277,23 +280,18 @@ internal fun SettingLabel(label: String, description: String?, modifier: Modifie
 /** On or off, as a small spaced label: ivory in a hairline box when on, dim and unboxed when off. */
 @Composable
 private fun ValuePill(text: String, on: Boolean) {
-    Box(
-        modifier = Modifier
-            .border(
-                LocalTorfilxDimens.current.hairline,
-                if (on) TorfilxColors.FocusFrame else TorfilxColors.Transparent,
-                TorfilxShapes.Control,
-            )
-            .padding(horizontal = 12.dp, vertical = 5.dp),
-    ) {
-        CapsText(
-            text = text,
-            style = TorfilxType.MetaCaps,
-            color = if (on) TorfilxColors.TextPrimary else TorfilxColors.TextTertiary,
-        )
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        CapsText(text = text, style = TorfilxType.MetaCaps, color = TorfilxColors.TextSecondary)
+        Box(
+            Modifier.size(width = 46.dp, height = 26.dp)
+                .background(if (on) TorfilxColors.Success else TorfilxColors.SurfaceHighest, TorfilxShapes.Pill)
+                .padding(3.dp),
+        ) {
+            Box(Modifier.size(20.dp).align(if (on) Alignment.CenterEnd else Alignment.CenterStart)
+                .background(TorfilxColors.TextPrimary, CircleShape))
+        }
     }
 }
-
 /** A paragraph of explanation, aligned with the rows' labels. */
 @Composable
 internal fun InfoText(text: String, color: androidx.compose.ui.graphics.Color = TorfilxColors.TextSecondary) {

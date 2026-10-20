@@ -10,9 +10,9 @@ import androidx.tv.material3.darkColorScheme
  *
  *   Palette.kt     the raw inks (internal)
  *   Color.kt       TorfilxColors: what each colour is for
- *   Type.kt        TorfilxFonts, TorfilxType (the editorial styles) and the Material type slots
+ *   Type.kt        shared sans-serif typography and Material type slots
  *   Dimens.kt      TorfilxDimens: overscan, rhythm, card sizes, line and focus measures
- *   Shapes.kt      TorfilxShapes: square corners
+ *   Shapes.kt      rounded artwork, controls, capsules, and panels
  *   Motion.kt      TorfilxMotion, reduce motion, and animateFocus
  *   Decoration.kt  rules and focus drawing: lift, frame, underline, row mark
  *

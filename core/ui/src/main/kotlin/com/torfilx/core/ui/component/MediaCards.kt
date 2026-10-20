@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -44,8 +45,8 @@ private val NUMERAL_OVERHANG_Y = 16.dp
 /**
  * The poster card used in every row and grid.
  *
- * Focus (plan.md §4, §5): the poster rises and a thin ivory frame appears around it, standing off its
- * edge, and its caption brightens — never colour alone. The accessible description says what the card
+ * Focus gently scales the artwork within a stationary D-pad target and adds a rounded light frame.
+ * Its caption brightens too. The accessible description says what the card
  * is and how far it has been watched (VoiceView reads it aloud on Fire TV).
  *
  * [numeral] sets a row number ("01") in large italics across the poster's foot, for ranked rows.
@@ -149,6 +150,7 @@ private fun FocusableMediaCard(
                     .matchParentSize()
                     .focusLift(focus, dimens.focusLift)
                     .focusFrame(focus, dimens.focusFrame, dimens.focusFrameGap)
+                    .clip(TorfilxShapes.Card)
                     .background(TorfilxColors.SurfaceLow, TorfilxShapes.Card),
             )
         }
@@ -206,8 +208,7 @@ private fun CardFace(
 }
 
 /**
- * The caption under every card: the title in italics, and a spaced line of what it is or what is
- * left. Always there, so a row reads like a contents page; two fixed lines, so every card in a row is
+ * Two fixed caption lines: title, then year/runtime or remaining time. Every card in a row is
  * the same height and vertical navigation never jumps.
  */
 @Composable

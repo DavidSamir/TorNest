@@ -160,9 +160,6 @@ private fun HomeContent(
                         // this one.
                         modifier = Modifier.bringIntoViewAsWhole(),
                         title = row.title,
-                        // Sections are numbered down the page like a magazine's; the shows are ranked.
-                        section = index + 1,
-                        ranked = row.kind == HomeRowKind.SHOWS,
                         items = row.items,
                         totalItems = row.totalItems,
                         seeAllIn = row.seeAllIn,

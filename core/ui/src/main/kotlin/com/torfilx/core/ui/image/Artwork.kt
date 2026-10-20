@@ -29,6 +29,7 @@ import coil3.size.Precision
 import coil3.size.Scale
 import com.torfilx.core.ui.theme.TorfilxColors
 import com.torfilx.core.ui.theme.TorfilxType
+import com.torfilx.core.ui.theme.LocalReduceMotion
 
 private const val CROSSFADE_MS = 150
 private const val DEMO_SCHEME = "demo://"
@@ -66,20 +67,21 @@ fun Artwork(
 
     val density = LocalDensity.current
     val context = LocalContext.current
-    val request = remember(url, widthDp, heightDp) {
+    val reduceMotion = LocalReduceMotion.current
+    val request = remember(url, widthDp, heightDp, density, context, reduceMotion) {
         ImageRequest.Builder(context)
             .data(sizedUrl(url!!, widthDp, heightDp, density.density))
-            .crossfade(CROSSFADE_MS)
+            .crossfade(if (reduceMotion) 0 else CROSSFADE_MS)
             // Requesting an inexact size lets Coil reuse a cached bitmap of a near-enough size
             // instead of decoding the same poster once per row.
             .precision(Precision.INEXACT)
             .scale(Scale.FILL)
             .apply {
                 if (widthDp != null && heightDp != null) {
-                    size(
-                        with(density) { widthDp.roundToPx() },
-                        with(density) { heightDp.roundToPx() },
-                    )
+                    val width = with(density) { widthDp.roundToPx() }.coerceAtLeast(1)
+                    val height = with(density) { heightDp.roundToPx() }.coerceAtLeast(1)
+                    val ratio = minOf(1f, 1280f / width, 720f / height)
+                    size((width * ratio).toInt().coerceAtLeast(1), (height * ratio).toInt().coerceAtLeast(1))
                 }
             }
             .build()
@@ -131,9 +133,7 @@ private fun GeneratedArtwork(title: String, seed: String, modifier: Modifier) {
     val brush = remember(seed) { Brush.verticalGradient(gradientFor(seed)) }
     Box(
         modifier = modifier
-            .background(brush)
-            .padding(8.dp)
-            .border(1.dp, TorfilxColors.Rule),
+            .background(brush),
         contentAlignment = Alignment.Center,
     ) {
         if (title.isNotEmpty()) {

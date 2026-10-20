@@ -23,7 +23,6 @@ import com.torfilx.core.ui.focus.keepNeighbourComposed
 import com.torfilx.core.ui.theme.LocalTorfilxDimens
 import com.torfilx.core.ui.theme.TorfilxColors
 import com.torfilx.core.ui.theme.TorfilxType
-import com.torfilx.core.ui.theme.ruleAbove
 import com.torfilx.core.ui.util.Format
 
 /**
@@ -140,14 +139,10 @@ fun RowHeader(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = inset)
-            .ruleAbove(dimens.hairline)
-            .padding(top = 14.dp),
+            .padding(top = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        numeral?.let {
-            Text(text = it, style = TorfilxType.SectionNumeral, color = TorfilxColors.TextTertiary)
-        }
         Text(
             text = title,
             style = TorfilxType.SectionTitle,

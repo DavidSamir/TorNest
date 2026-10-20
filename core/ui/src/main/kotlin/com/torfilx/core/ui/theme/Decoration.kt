@@ -5,11 +5,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 
 /*
  * The drawn parts of the look: hairline rules, and what focus draws — a lift, a frame that stands off
@@ -34,6 +36,9 @@ fun Modifier.ruleBelow(thickness: Dp, color: Color = TorfilxColors.Rule): Modifi
 /** Raises the element by up to [lift] as [focus] goes to 1. */
 fun Modifier.focusLift(focus: State<Float>, lift: Dp): Modifier = graphicsLayer {
     translationY = -lift.toPx() * focus.value
+    val scale = 1f + 0.045f * focus.value
+    scaleX = scale
+    scaleY = scale
 }
 
 /** Moves the element right by up to [distance] as [focus] goes to 1: the arrow after a focused link. */
@@ -59,7 +64,11 @@ fun Modifier.focusFrame(
     val stroke = Stroke(strokeWidth)
     onDrawBehind {
         val alpha = focus.value
-        if (alpha > 0f) drawRect(color, topLeft, frameSize, alpha = alpha, style = stroke)
+        if (alpha > 0f) drawRoundRect(
+            color, topLeft, frameSize,
+            cornerRadius = CornerRadius(12.dp.toPx() + inset),
+            alpha = alpha, style = stroke,
+        )
     }
 }
 
@@ -80,12 +89,14 @@ fun Modifier.focusUnderline(focus: State<Float>, thickness: Dp, color: Color = T
 fun Modifier.focusRowMark(focus: State<Float>, thickness: Dp): Modifier = drawBehind {
     val progress = focus.value
     if (progress > 0f) {
-        drawRect(TorfilxColors.FocusWash, alpha = progress)
-        val edge = size.height * progress
-        drawRect(
-            TorfilxColors.Focus,
-            topLeft = Offset(0f, (size.height - edge) / 2),
-            size = Size(thickness.toPx().coerceAtLeast(1f), edge),
+        drawRoundRect(TorfilxColors.FocusWash, cornerRadius = CornerRadius(10.dp.toPx()), alpha = progress)
+        drawRoundRect(
+            TorfilxColors.FocusFrame,
+            topLeft = Offset(thickness.toPx() / 2, thickness.toPx() / 2),
+            size = Size(size.width - thickness.toPx(), size.height - thickness.toPx()),
+            cornerRadius = CornerRadius(10.dp.toPx()),
+            alpha = progress,
+            style = Stroke(thickness.toPx()),
         )
     }
 }

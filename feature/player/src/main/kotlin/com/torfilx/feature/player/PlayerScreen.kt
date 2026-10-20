@@ -7,11 +7,12 @@ import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,6 +27,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -761,7 +766,7 @@ private fun PlayerControls(
             )
         }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             TvButton(
                 text = if (state.isPlaying) "❚❚ Pause" else "▶ Play",
                 onClick = onPlayPause,
@@ -797,7 +802,7 @@ private fun TrackPickers(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         if (state.audioTracks.size > 1) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 CapsText(
                     text = "Audio",
                     style = TorfilxType.MetaCaps,
@@ -814,7 +819,7 @@ private fun TrackPickers(
             }
         }
         if (state.subtitleTracks.isNotEmpty()) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 CapsText(
                     text = "Subtitles",
                     style = TorfilxType.MetaCaps,
@@ -856,9 +861,18 @@ private fun ScrubBar(
     Box(
         Modifier
             .fillMaxWidth()
-            // Taller when focused so the scrubber is clearly the active control.
-            .height(if (focused) 12.dp else 6.dp)
-            .background(TorfilxColors.ProgressTrack)
+            // Fixed hit bounds prevent the controls below from shifting when focus enters the bar.
+            .height(24.dp)
+            .drawBehind {
+                val track = if (focused) 6.dp.toPx() else 4.dp.toPx()
+                val top = (size.height - track) / 2
+                val radius = CornerRadius(track / 2)
+                drawRoundRect(TorfilxColors.ProgressTrack, Offset(0f, top), Size(size.width, track), radius)
+                drawRoundRect(TorfilxColors.TextTertiary, Offset(0f, top), Size(size.width * bufferedFraction, track), radius)
+                drawRoundRect(TorfilxColors.ProgressFill, Offset(0f, top), Size(size.width * fraction, track), radius)
+                if (focused || isScrubbing) drawCircle(TorfilxColors.Focus, radius = 6.dp.toPx(),
+                    center = Offset((size.width * fraction).coerceIn(6.dp.toPx(), size.width - 6.dp.toPx()), size.height / 2))
+            }
             .focusRequester(focusRequester)
             .onFocusChanged { focused = it.isFocused }
             // Announce the seek bar and position for VoiceView; left/right scrub when focused.
@@ -876,25 +890,7 @@ private fun ScrubBar(
                     else -> false // ↑/↓ move focus to the buttons; OK/Back handled by the root
                 }
             },
-    ) {
-        Box(
-            Modifier
-                .fillMaxWidth(bufferedFraction)
-                .fillMaxHeight()
-                .background(TorfilxColors.TextTertiary),
-        )
-        Box(
-            Modifier
-                .fillMaxWidth(fraction)
-                .fillMaxHeight()
-                .background(
-                    when {
-                        isScrubbing || focused -> TorfilxColors.Focus
-                        else -> TorfilxColors.ProgressFill
-                    },
-                ),
-        )
-    }
+    )
 }
 
 @Composable

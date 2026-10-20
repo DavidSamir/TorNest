@@ -42,20 +42,16 @@ import com.torfilx.core.ui.component.EpisodeRow
 import com.torfilx.core.ui.component.ErrorState
 import com.torfilx.core.ui.component.Kicker
 import com.torfilx.core.ui.component.MenuAction
-import com.torfilx.core.ui.component.Plate
 import com.torfilx.core.ui.component.RowHeader
 import com.torfilx.core.ui.component.SeasonChips
 import com.torfilx.core.ui.component.SharingConsentDialog
 import com.torfilx.core.ui.component.SkeletonBox
 import com.torfilx.core.ui.component.TvTextLink
 import com.torfilx.core.ui.component.kindAndYear
-import com.torfilx.core.ui.focus.bringIntoViewAsWhole
 import com.torfilx.core.ui.focus.keepNeighbourComposed
 import com.torfilx.core.ui.theme.LocalTorfilxDimens
 import com.torfilx.core.ui.theme.TorfilxColors
 import com.torfilx.core.ui.theme.TorfilxType
-import com.torfilx.core.ui.theme.ruleAbove
-import com.torfilx.core.ui.theme.ruleBelow
 import com.torfilx.core.ui.util.Format
 import kotlinx.coroutines.delay
 
@@ -174,7 +170,6 @@ private fun FilmDetails(
     // column scrolls to whatever link is focused.
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Spread(
-            modifier = Modifier.bringIntoViewAsWhole(),
             item = state.item,
             facts = filmFacts(state.item, sources),
             notice = {
@@ -271,7 +266,7 @@ private fun ShowDetailsContent(
     ) {
         item(key = "header", contentType = "header") {
             // Focus on a link shows the whole header, so the title never scrolls away from it.
-            Column(Modifier.bringIntoViewAsWhole()) {
+            Column {
                 Spread(
                     item = state.item,
                     facts = showFacts(state.item),
@@ -450,79 +445,47 @@ private fun Spread(
     secondaryActions: (@Composable RowScope.() -> Unit)? = null,
 ) {
     val dimens = LocalTorfilxDimens.current
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = dimens.overscanHorizontal)
-            .padding(top = SPREAD_TOP),
-        horizontalArrangement = Arrangement.spacedBy(56.dp),
-    ) {
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Box(modifier.fillMaxWidth()) {
+        com.torfilx.core.ui.component.CinematicBackdrop(item = item, height = 400.dp)
+        Column(
+            modifier = Modifier.padding(horizontal = dimens.overscanHorizontal)
+                .padding(top = SPREAD_TOP, bottom = 20.dp).width(620.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
             Kicker(text = kindAndYear(item))
-            Text(
-                text = item.title,
-                style = TorfilxType.displayFor(item.title),
-                color = TorfilxColors.TextPrimary,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
+            Text(text = item.title, style = TorfilxType.displayFor(item.title),
+                color = TorfilxColors.TextPrimary, maxLines = 2, overflow = TextOverflow.Ellipsis)
             item.genres.take(3).takeIf { it.isNotEmpty() }?.let { genres ->
-                Text(
-                    text = genres.joinToString(", ") + ".",
-                    style = TorfilxType.Deck,
-                    color = TorfilxColors.TextSecondary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                Text(text = genres.joinToString(" · "), style = TorfilxType.Deck,
+                    color = TorfilxColors.TextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
             item.overview?.takeIf { it.isNotBlank() }?.let { overview ->
-                Text(
-                    text = overview,
-                    style = TorfilxType.Reading,
-                    color = TorfilxColors.TextSecondary,
-                    maxLines = 4,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                Text(text = overview, style = TorfilxType.Reading,
+                    color = TorfilxColors.TextSecondary, maxLines = 3, overflow = TextOverflow.Ellipsis)
             }
+            if (facts.isNotEmpty()) Facts(facts)
             notice()
-            // Wraps: a film carries a link per quality, and "Resume 1080p" three or four times over is
-            // wider than this column. In a row that cannot wrap, the last links were squeezed to a
-            // clipped word or to nothing at all — still focusable, so the D-pad landed on something
-            // the viewer could not see.
             FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(36.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.padding(top = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+                modifier = Modifier.padding(top = 8.dp),
                 content = primaryActions,
             )
             secondaryActions?.let { actions ->
-                Row(horizontalArrangement = Arrangement.spacedBy(36.dp), content = actions)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(14.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp), content = actions)
             }
-            if (facts.isNotEmpty()) Facts(facts, Modifier.padding(top = 12.dp))
         }
-        Plate(item = item, label = "Plate I")
     }
 }
 
-/** A short table of facts between hairline rules: "RATING   8.4 / 10". */
 @Composable
 private fun Facts(facts: List<Pair<String, String>>, modifier: Modifier = Modifier) {
-    val hairline = LocalTorfilxDimens.current.hairline
-    Column(modifier.fillMaxWidth().ruleAbove(hairline)) {
+    Row(modifier, horizontalArrangement = Arrangement.spacedBy(24.dp)) {
         facts.forEach { (label, value) ->
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .ruleBelow(hairline)
-                    .padding(vertical = 9.dp),
-            ) {
-                CapsText(
-                    text = label,
-                    style = TorfilxType.MetaCaps,
-                    color = TorfilxColors.TextTertiary,
-                    modifier = Modifier.width(FACT_LABEL_WIDTH),
-                )
-                CapsText(text = value, style = TorfilxType.MetaCaps, color = TorfilxColors.TextPrimary)
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                CapsText(text = value, style = TorfilxType.KickerCaps, color = TorfilxColors.TextPrimary)
+                CapsText(text = label, style = TorfilxType.MetaCaps, color = TorfilxColors.TextTertiary)
             }
         }
     }

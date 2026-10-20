@@ -255,7 +255,7 @@ private fun CategoryItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .then(if (selected && !focused) Modifier.ruleAtStart(dimens.hairline) else Modifier)
+            .background(if (selected) TorfilxColors.SurfaceHigh else TorfilxColors.Transparent, com.torfilx.core.ui.theme.TorfilxShapes.Control)
             .focusRowMark(focus, dimens.underline)
             .focusRequester(focusRequester)
             .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)

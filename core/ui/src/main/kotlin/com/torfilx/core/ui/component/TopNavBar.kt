@@ -16,7 +16,7 @@ import androidx.tv.material3.Text
 import com.torfilx.core.ui.theme.LocalTorfilxDimens
 import com.torfilx.core.ui.theme.TorfilxColors
 import com.torfilx.core.ui.theme.TorfilxType
-import com.torfilx.core.ui.theme.ruleBelow
+import com.torfilx.core.ui.theme.TorfilxShapes
 
 /** A destination in the top navigation bar. */
 data class TopNavItem(
@@ -24,13 +24,12 @@ data class TopNavItem(
     val label: String,
 )
 
-private val MASTHEAD_HEIGHT = 60.dp
+private val MASTHEAD_HEIGHT = 74.dp
 
 /**
- * The masthead: the italic wordmark, the sections in spaced capitals, and a hairline rule beneath.
+ * Compact branding and a rounded navigation capsule with separate selected and focused states.
  *
- * The current section is set in ivory; the focused one also draws an underline, so the two are never
- * confused. Selection follows OK, not focus: moving across the tabs must not tear down the screen
+ * Selection follows OK, not focus: moving across the tabs must not tear down the screen
  * below and destroy the row you were about to come back to (plan.md §5.2 rule 6).
  */
 @Composable
@@ -48,7 +47,6 @@ fun TopNavBar(
             .height(MASTHEAD_HEIGHT)
             .background(TorfilxColors.Background)
             .padding(horizontal = dimens.overscanHorizontal)
-            .ruleBelow(dimens.hairline)
             .focusGroup(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -57,14 +55,21 @@ fun TopNavBar(
             text = "TorNest",
             style = TorfilxType.Masthead,
             color = TorfilxColors.TextPrimary,
-            modifier = Modifier.padding(end = 36.dp),
+            modifier = Modifier.padding(end = 20.dp),
         )
-        items.forEach { item ->
-            TvChip(
-                text = item.label,
-                selected = item.id == selectedId,
-                onClick = { onSelect(item) },
-            )
+        Box(Modifier.weight(1f))
+        Row(
+            modifier = Modifier.background(TorfilxColors.SurfaceLow, TorfilxShapes.Pill).padding(5.dp),
+            horizontalArrangement = Arrangement.spacedBy(2.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            items.forEach { item ->
+                TvChip(
+                    text = item.label,
+                    selected = item.id == selectedId,
+                    onClick = { onSelect(item) },
+                )
+            }
         }
         Box(Modifier.weight(1f))
         trailing?.invoke()
