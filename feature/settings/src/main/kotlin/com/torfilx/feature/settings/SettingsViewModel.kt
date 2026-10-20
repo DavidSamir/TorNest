@@ -308,7 +308,7 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             val text = withContext(Dispatchers.IO) {
                 runCatching {
-                    val file = File(context.getExternalFilesDir(null) ?: context.filesDir, "torfilx-log.txt")
+                    val file = File(context.getExternalFilesDir(null) ?: context.filesDir, "tornest-log.txt")
                     file.writeText(buildLogExport())
                     "Logs written to ${file.absolutePath}"
                 }.getOrElse {
@@ -321,7 +321,7 @@ class SettingsViewModel @Inject constructor(
     }
 
     private fun buildLogExport(): String = buildString {
-        appendLine("TORFILX log export")
+        appendLine("TorNest log export")
         appendLine(
             "device: ${Build.MANUFACTURER} ${Build.MODEL} · " +
                 "Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT}) · " +
@@ -369,7 +369,7 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             val text = withContext(Dispatchers.IO) {
                 runCatching {
-                    val file = backupFile()
+                    val file = backupFile(forRestore = true)
                     if (!file.exists()) {
                         "No backup found at ${file.absolutePath}. Copy your backup file there first."
                     } else {
@@ -386,8 +386,13 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    private fun backupFile(): File =
-        File(context.getExternalFilesDir(null) ?: context.filesDir, "torfilx-backup.json")
+    private fun backupFile(forRestore: Boolean = false): File {
+        val directory = context.getExternalFilesDir(null) ?: context.filesDir
+        val file = File(directory, "tornest-backup.json")
+        // Existing installations can still restore backups exported before the rename.
+        val legacyFile = File(directory, "torfilx-backup.json")
+        return if (forRestore && !file.exists() && legacyFile.exists()) legacyFile else file
+    }
 
     fun dismissMessage() {
         message.value = null

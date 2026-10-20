@@ -648,7 +648,7 @@ internal fun AboutPane(state: SettingsUiState, viewModel: SettingsViewModel, fir
         modifier = Modifier.padding(vertical = 4.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        InfoLine("App", "TORFILX ${state.about.appVersion}")
+        InfoLine("App", "TorNest ${state.about.appVersion}")
         InfoLine("Device", state.about.device)
         InfoLine("System", state.about.system)
         InfoLine("Catalogue", catalogueSummary(state.catalogue))

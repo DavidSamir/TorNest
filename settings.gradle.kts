@@ -21,7 +21,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "torfilx"
+rootProject.name = "TorNest"
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 

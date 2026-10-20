@@ -52,7 +52,7 @@ class CrashStore @Inject constructor(
     }
 
     private fun report(threadName: String, error: Throwable): String = buildString {
-        appendLine("=== TORFILX crash ===")
+        appendLine("=== TorNest crash ===")
         appendLine("time:    ${isoTime(System.currentTimeMillis())}")
         appendLine("app:     ${appVersion()}")
         appendLine("device:  ${Build.MANUFACTURER} ${Build.MODEL} (${Build.PRODUCT})")

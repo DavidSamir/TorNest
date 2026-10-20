@@ -17,7 +17,7 @@ import com.torfilx.core.ui.component.SharingConsentDialog
 internal fun FirstRunSharingPrompt(onAccept: () -> Unit, onExit: () -> Unit) {
     BackHandler(onBack = onExit)
     SharingConsentDialog(
-        title = "TORFILX shares while you watch",
+        title = "TorNest shares while you watch",
         storageSummary = "Sharing is also how the catalogue stays current: new titles and episodes arrive " +
             "from the peer network, signed by the catalogue's publisher, with no server involved. Shared " +
             "titles never use more than half of the free space, and the oldest are cleared first.",

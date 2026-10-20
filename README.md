@@ -1,320 +1,136 @@
-# TORFILX
+# TorNest — BitTorrent streaming for Fire TV and Android TV
 
-A Netflix-style Fire TV app whose library is a **signed catalogue of films and TV shows**, played
-over BitTorrent. There is no media server and no backend: the app ships a catalogue, keeps it current
-from the peer network, streams each title from its magnet link, and (with the viewer's consent) shares
-what it has downloaded.
+TorNest is a TV app for browsing a catalogue of movies and TV shows and streaming video over BitTorrent. Built for Android-based Fire TV, Android TV, and Google TV devices, it works with your remote and keeps watch progress on your device. No separate media server is required.
 
-## What it does
+**[Releases and APK downloads](https://github.com/DavidSamir/TorNest/releases) · [Installation](#install-tornest) · [Device compatibility](#device-compatibility) · [FAQ](#frequently-asked-questions) · [Build from source](#build-from-source)**
 
-- **10-foot UI** built with Jetpack Compose + `androidx.tv:tv-material`: hero banner, focus-scaled
-  rows, details, on-screen-keyboard search, Movies and Shows grids, My List, Settings — all driven by
-  the D-pad alone.
-- **Shows as shows**: a show opens to its seasons and episodes; its button resumes or plays the
-  next episode; an episode ending counts down into the next one (autoplay is a setting); Continue
-  Watching holds one card per show. Specials are listed but never chained into.
-- **Torrent streaming, not downloading**: only the video file is fetched, pieces are prioritised in
-  play order with deadlines, and a loopback HTTP server feeds ExoPlayer while the download continues.
-  Seeking into a not-yet-downloaded part re-prioritises and buffers instead of failing.
-- **Explicit sharing consent**: off until the viewer agrees. The first launch asks once, with "Enable
-  sharing" focused, explaining that streaming uploads to others and exposes your IP; one OK press
-  starts playback and catalogue updates. "Not now" is real, and Play asks again.
-- **Storage budget**: never uses more than a configurable share of *free* space (default 50%, always
-  keeping a 500 MB reserve), evicting oldest-touched titles first and never the one playing.
-- **Local watch state**: Continue Watching, resume positions and My List live in Room on the device.
-- **A catalogue that updates itself, without a server**: the maintainer signs a catalogue release and
-  publishes a pointer to it in the BitTorrent DHT; with sharing on, the app finds it, downloads it as a
-  small torrent, verifies every byte against the publisher key built into the APK, swaps it in while
-  running, and helps seed it. The bundled copy is the fallback. See `docs/CATALOGUE_P2P.md`.
+## Why use TorNest?
 
-## Requirements
+- **Browse from the couch.** Explore Movies and Shows, search with an on-screen keyboard, and navigate with a D-pad remote.
+- **Stream while video downloads.** TorNest prioritizes video pieces for playback instead of waiting for the entire file to finish downloading.
+- **Pick up where you left off.** Continue Watching, resume positions, and My List are stored locally.
+- **Follow a series.** Browse seasons and episodes, resume the next episode, and choose whether to autoplay.
+- **Keep storage under control.** A configurable cache budget removes older cached titles while protecting the title currently playing.
+- **Receive signed catalogue updates.** The app verifies catalogue releases against its trusted publisher key before applying them.
+- **Use a TV app without a separate server.** Playback runs on the TV device; you do not need to set up a media server or Google Play Services.
 
-- JDK 17 or 21 (Android Studio's bundled JBR works)
-- Android SDK with platform 37 and build-tools; `local.properties` pointing at it (`sdk.dir=...`)
-- A Fire TV / Android TV device or emulator (arm64-v8a, armeabi-v7a or x86_64)
+TorNest uses peer-to-peer networking: playback needs reachable peers, and streaming can also upload video pieces to other peers. Sharing starts only after you accept it in the app.
 
-## Device support
+## Install TorNest
 
-Version **1.0.1** bundles **catalogue 7** (2,028 titles and 3,309 episodes), so a first install has the
-catalogue immediately. Its bytes and pinned title ids match the published release. Nine films and
-1,127 episodes in that release contain metadata but no torrent sources; the bundle preserves them
-as published.
+### Download the Android APK
 
-One APK keeps two native builds of the same libtorrent4j 1.2.3.0 JNI API. **API 22–29 uses the original
-library**, preserving old Fire Stick support. **API 30+ uses an Android 11 compatibility build**:
-network addresses come from bionic's `getifaddrs()` and network changes are polled without binding a
-restricted `NETLINK_ROUTE` socket. The compatibility library targets API 24 and has 16 KiB ELF load
-alignment; it is never loaded on old Fire OS 5 devices. The APK still has `minSdk 22`, both ARM ABIs,
-and v1 signing. Actual native socket binding, metadata exchange and byte transfer are tested on
-API 22 and API 30 emulators before a release can publish. Xiaomi hardware validation remains a
-separate check after installing the release.
+Open the [TorNest repository releases](https://github.com/DavidSamir/TorNest/releases), read the release notes, and download the APK attached to the release you want to install. Existing release filenames still use the earlier Torfilx name.
 
-The compatibility build is reproducible under Linux/WSL. Install CMake, Ninja, Git, Python 3, Perl,
-curl and unzip, then run `scripts/native-torrent/prepare.sh` followed by
-`scripts/native-torrent/build_android.sh <abi>`. Sources and downloaded dependencies are pinned;
-the source patch lives in `scripts/native-torrent/patch_android.py`. Copy the resulting library from
-`$HOME/torfilx-native/build/<abi>/libtorrent4j-android11.so` into
-`core/torrent/src/main/jniLibs/<abi>/libtorrent4j-android11.so` (or use `TORFILX_NATIVE_WORK` for a different
-work directory). Build all four ABIs for the device tests; releases package the two ARM ABIs.
+The Android release workflow currently publishes `torfilx-release.apk`. Use the APK attached to a release, rather than a source-code ZIP. Check the release notes for version-specific compatibility and upgrade instructions.
 
-Scope as of **August 2026**. The build's floor is deliberately low — `minSdk 22`, ARM-only release
-ABIs, no Google Play Services anywhere in the graph, `leanback` declared optional — so the APK
-installs on nearly anything Android-based with an HDMI port. Distribution is sideload-only; the app
-is on no store.
+### Install on Fire TV, Android TV, or Google TV
 
-| Constraint | Value | Why |
-| --- | --- | --- |
-| `minSdk` / `targetSdk` / `compileSdk` | 22 / 34 / 36 | API 22 is Fire OS 5, the oldest live Fire TV stick |
-| Release ABIs | `armeabi-v7a` + `arm64-v8a` | every Fire TV is 32-bit ARM; arm64 covers Android TV boxes. `x86`/`x86_64` are debug-only (emulator) |
-| Play Services | none | nothing depends on GMS, so uncertified and AOSP boxes work as-is |
-| `android.software.leanback` | `required="false"` | installs on non-leanback Fire OS builds and on TV emulators |
-| Signing | v1 + v2 + v3 | Fire OS 5 rejects a v2-only APK ("problem parsing the package") |
+1. Confirm that your device runs Android or Android-based Fire OS and matches the [compatibility requirements](#device-compatibility).
+2. Transfer the APK to the TV using your preferred sideloading method. Enable installation from the installer you use when your device asks for it.
+3. Open the APK on the device and complete installation.
+4. Launch TorNest. Review the sharing prompt before enabling peer-to-peer playback and catalogue updates.
 
-### The ten Android TV systems that matter, and where we stand
-
-Ordered by installed base / OS share. Vendors do not publish per-brand Android TV unit counts, so
-rows 3–10 are ranked on share and shipment evidence rather than exact numbers.
-
-| # | System | OS base / API | Scale | Runs the release APK? |
-| --- | --- | --- | --- | --- |
-| 1 | **Fire TV sticks & cubes** — Fire OS 5/6/7/8 | Android 5.1 / 7.1 / 9 / 11 → API 22/25/28/30, all `armeabi-v7a` | 250M+ Fire TVs sold | ✅ **Proven** — the only tier tested on real hardware, all four API levels (see `TESTING_PLAN.md`) |
-| 2 | **Fire TV smart TVs** — Omni, Insignia, Toshiba, Panasonic; Fire OS 8/14/16 | Android 11 / 14 / 16 → API 30/34/36 | Fire TV ≈ 17% of the US streaming-OS market | ✅ Expected, untested. Fire OS 16 is new — see the 16 KB note below |
-| 3 | **Google TV built into sets** — TCL, Hisense, Sony Bravia, Philips, Sharp | Android 12 → 14 (TCL's 2026 line ships 14) | Android TV + Google TV: 300M monthly-active devices | ✅ Expected, untested |
-| 4 | **Google's own players** — Google TV Streamer 4K, Chromecast with Google TV | Android 14 / Android 12→14 | Google TV is the #3 US streaming OS, ≈14% | ✅ Expected, untested |
-| 5 | **Walmart onn. Google TV** — 4K Pro, 4K Plus | Android 12 → 14, Amlogic ARM | the US budget-volume box | ✅ Expected, untested |
-| 6 | **Classic Android TV sets** — Sony, Philips, TCL 2016–2022 | Android TV 8–11 | most of the pre-Google-TV installed base | ✅ Expected — far above the API 22 floor |
-| 7 | **NVIDIA Shield TV / Pro** | Android TV 11, Tegra X1+ (arm64) | still the enthusiast standard in 2026 | ✅ Expected — best-case hardware for torrent streaming |
-| 8 | **Xiaomi TV Box S 3rd Gen / TV Stick** | Google TV 14, Amlogic S905X5M (arm64) | the main international box | ✅ Expected, untested |
-| 9 | **Operator-tier boxes** — Airtel, Jio, Deutsche Telekom, Bouygues, pay-TV | Android TV 9–11 | large carrier-subsidised base | ⚠️ **Conditional** — the OS is fine, but many are locked: no unknown-sources, no ADB. Blocked by the operator, not by us |
-| 10 | **Generic AOSP boxes** — MECOOL, X96, H96, Ugoos | Android 9–14, Amlogic ARM, no GMS | large grey-market volume | ✅ Expected — the zero-GMS design is exactly what makes these work |
-| — | **Amazon Vega OS** — Fire TV Stick 4K Select (2025), Fire TV Stick HD (2026) | **Linux, not Android** | every *future* Fire TV Stick | ❌ **Impossible** — cannot run an APK at all; no sideloading, no Downloader |
-
-**Nine of the ten run the current release APK**: one proven on hardware, seven expected but never
-tested on a device, and one (operator boxes) gated by the operator's lock rather than by anything in
-this build. Vega OS is listed as an eleventh row on purpose — it is not an Android TV system, but it
-is where Amazon is moving all new hardware, so omitting it would overstate the app's reach.
-
-### Beyond Android: the wider TV OS market, and what a port would cost
-
-Only two of the ten biggest TV operating systems run Android — and they are the two we already ship
-to. The rest are Linux or Darwin platforms where an APK is not a file the system recognises.
-
-Shares below come from three datasets that disagree by design: CTVMA counts TV sets shipped and
-**excludes HDMI dongles** (which structurally undercounts Roku, Fire TV and Google TV), Parks
-Associates counts US broadband households, Omdia counts European shipments.
-
-Port difficulty is scored 1–5 on how much of *this* codebase survives:
-
-| Level | Meaning |
-| --- | --- |
-| **1 — free** | the existing release APK installs and runs; the work is verification |
-| **2 — days** | same codebase; a build-config change plus on-device testing |
-| **3 — months, engine survives** | new language and UI, but libtorrent's C++ still compiles and runs on-device |
-| **4 — a year+, engine moves** | the runtime forbids third-party native code, so the torrent engine must be replaced or relocated to a remote gateway — a different product |
-| **5 — not open to us** | no public SDK, or no install path we control; effort does not change the outcome |
-
-| # | OS | Base | Global sets (CTVMA '24) | Other reach signal | App model | Port difficulty |
-| --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Google TV / Android TV** | Android | 5.9% | 300M monthly-active devices; #1 in Europe at 32% | Android APK | **1** — this is us |
-| 2 | **Roku OS** | Linux | 6.4% | #1 in the US at 28%; 100M+ streaming households | BrightScript + SceneGraph | **4** — no native modules and no raw sockets; then channel certification |
-| 3 | **Samsung Tizen** | Linux | **12.8% (#1)** | #2 in the US at 23% | HTML5 web app (`.wgt`) | **4** — the web runtime bans native code; then Samsung store review |
-| 4 | **Amazon Fire OS** | Android | 6.4% | 250M+ Fire TVs sold; ≈17% of the US | Android APK | **1** — primary target, tested on API 22/25/28/30 |
-| 5 | **LG webOS** | Linux | 7.4% | ≈12% overall, 52% of the premium OLED tier | HTML5 / Enact (`.ipk`) | **4** — same shape as Tizen |
-| 6 | **Hisense VIDAA** | Linux | **7.8% (#2)** | overtakes webOS in Europe during 2026 | HTML5 (VIDAA U SDK) | **5** — SDK access is partner-gated |
-| 7 | **Apple tvOS** | Darwin | — (no sets) | ≈8% of US households | Swift / SwiftUI | **3** — technically the *easiest* non-Android port: libtorrent compiles for tvOS and AVPlayer replaces ExoPlayer. App Store review and the absence of any sideload path are what stop it, not the code |
-| 8 | **Vizio SmartCast** | Linux | 5.8% | ≈18.5–20M monthly actives, US only | none published | **5** — no third-party developer programme exists at all |
-| 9 | **Xperi TiVo OS** | Linux | 2.3% | Vestel OEM, the European growth play | HTML5 | **5** — partner-only |
-| 10 | **Titan OS** | Linux | inside "other" | Philips and Sharp, Europe | HTML5 | **5** — partner-only |
-| — | **Amazon Vega OS** | Linux | new | every *future* Fire TV Stick | React Native (Kepler SDK) | **5** — approval-gated programme, sideloading removed entirely |
-
-Level 2 never appears above because it only occurs *inside* the Android rows: re-adding `x86_64` for
-an x86 box, or rebuilding the native libraries 16 KB-aligned for Android 15+ arm64.
-
-The recurring wall is distribution, not code. Every platform in rows 2–10 is store-gated with review,
-and their developer modes are testing tools rather than distribution channels — a BitTorrent client
-does not pass Roku's, Samsung's, LG's or Apple's certification whatever the catalogue holds. So a
-port is not one rewrite; it is a rewrite into a channel that then rejects it. Sideload-only delivery
-works on Android-based TV OSes and nowhere else, which is exactly the two rows we already reach.
-
-### Watch items
-
-1. **Vega OS erosion.** Every future Fire TV Stick is Vega. Our best-tested platform is a *shrinking*
-   installed base, and reaching new Amazon hardware would mean a rewrite against Amazon's Kepler SDK,
-   not a port.
-2. **Google's sideload lockdown.** Developer verification (identity + a $25 registration) begins
-   September 2026 in Brazil, Indonesia, Singapore and Thailand, expanding through 2027, and covers
-   certified Google TV devices. Rows 3–8 are the growth path and they are what this hits.
-3. **16 KB page sizes.** The Android 11 compatibility library has 16 KiB ELF load alignment.
-   Release checks verify that alignment and retain the original API 22 library. A real 16 KiB
-   Android device still needs playback validation before claiming full device support.
-4. **x86 is release-stripped.** An x86 Android TV box or ChromeOS will not run a release build; the
-   debug variant still does.
-
-Sources for the market figures, which age quickly:
-[Fire OS overview](https://developer.amazon.com/docs/fire-tv/fire-os-overview.html) ·
-[Fire OS 16](https://www.aftvnews.com/android-16-is-coming-to-fire-tv-smart-tvs-via-newly-revealed-fire-os-16/) ·
-[Vega OS has no sideloading](https://www.aftvnews.com/these-are-the-fire-tvs-that-dont-support-sideloading-or-downloader-due-to-vega-os-replacing-fire-os/) ·
-[all future sticks are Vega](https://9to5google.com/2026/04/17/amazon-fire-tv-android-vega-switch/) ·
-[250M Fire TVs sold](https://www.thurrott.com/smart-tech/smart-home/313174/amazon-has-now-sold-over-250-million-fire-tv-devices) ·
-[Google TV at 300M devices](https://www.androidheadlines.com/2026/05/google-tv-300-million-devices-growth-2026.html) ·
-[Google TV is the #3 US streaming OS](https://9to5google.com/2026/07/29/google-tv-is-reportedly-the-3-streaming-os-in-the-us/) ·
-[smart TV OS share](https://www.sammobile.com/news/despite-samsungs-tv-dominance-tizen-os-trails-roku-fire-tv-and-google-tv/) ·
-[Google TV brands](https://www.flatpanelshd.com/guide.php?subaction=showfull&id=1721907871) ·
-[Android 14 for TV](https://www.androidauthority.com/android-tv-14-features-3362883/) ·
-[Xiaomi TV Box S 3rd Gen](https://www.mi.com/global/product/xiaomi-tv-box-s-3rd-gen/specs/) ·
-[sideloading restrictions](https://www.androidauthority.com/how-android-sideloading-restrictions-may-work-3595355/) ·
-[16 KB page sizes](https://developer.android.com/guide/practices/page-sizes) ·
-[CTVMA global OS ranking](https://www.nexttv.com/news/hisenses-vidaa-is-now-the-no-2-smart-tv-os-globally-behind-samsung-tizen-trade-group-says-chart-of-the-day) ·
-[Parks Associates, US Q1 2026](https://www.parksassociates.com/blogs/pr-video-services-ott-pay-tv/roku-and-samsung-dominate-connected-tv-platforms) ·
-[Omdia on emerging European TV OS](https://www.broadbandtvnews.com/2026/04/23/emerging-tv-os-platforms-to-take-30-share-in-europe-by-2030-says-omdia/) ·
-[Vizio SmartCast actives](https://www.lightreading.com/video-streaming/walmart-tunes-up-smart-tv-play-with-2-3b-deal-for-vizio) ·
-[TV app runtimes compared](https://www.forasoft.com/learn/video-streaming/articles-streaming/smart-tv-players-tizen-webos-roku-vidaa)
-
-## Build and run
+For installation from a computer with Android Platform Tools and device debugging enabled:
 
 ```bash
-./gradlew :app:assembleDebug          # build
-./gradlew test                        # unit tests
+adb connect <tv-ip-address>:5555
+adb install -r torfilx-release.apk
+```
+
+Your TV may require a different debugging connection or pairing flow; use the address and instructions shown by the device. If Android refuses an update, check the release's signing and migration notes before uninstalling, because uninstalling removes local app data.
+
+## Device compatibility
+
+TorNest targets TVs and streaming devices that can run Android APKs. The current release configuration requires **Android 5.1 / API 22 or newer** and includes **32-bit ARM (`armeabi-v7a`) and 64-bit ARM (`arm64-v8a`)** native libraries.
+
+| Device or platform | Compatibility scope |
+| --- | --- |
+| Android-based Amazon Fire TV / Fire TV Stick | Primary target. Check the device's actual Fire OS and Android version. |
+| Android TV and Google TV | Intended targets when the device meets the Android version and ARM requirements. Individual models still need playback testing. |
+| Android-based TV boxes without Google Play Services | Google Play Services is not required; device installation permissions and codec support still apply. |
+| x86 / x86_64 Android emulators | Supported by the debug build; these ABIs are excluded from the release APK. |
+| TVs without Android APK support | The Android APK cannot run directly on Roku OS, Samsung Tizen, LG webOS, Apple tvOS, or Amazon Vega OS. |
+
+Minimum requirements do not guarantee playback on every device. Performance also depends on available peers, network conditions, video codecs, hardware decoding, and free storage. When reporting compatibility, include the exact device model, OS version, and TorNest release.
+
+## How TorNest works
+
+1. **Browse the built-in catalogue.** A new installation includes movie and show metadata, so browsing does not depend on first downloading a catalogue update.
+2. **Choose a title or episode.** TorNest uses its catalogue's magnet sources to find peers and obtain torrent metadata.
+3. **Play as pieces arrive.** The torrent engine prioritizes the selected video, and a local HTTP bridge supplies it to the player. Seeking can require more buffering.
+4. **Keep your place.** Watch progress and saved titles remain on the device. Settings includes manual watch-data backup and restore.
+5. **Update the catalogue.** With sharing enabled, TorNest can discover releases through the peer network and verify them before replacing the catalogue.
+
+The catalogue contains metadata and source references, not bundled video files. A signed catalogue verifies its publisher and integrity; it does not guarantee that a source is reachable or that its content may be redistributed.
+
+## Frequently asked questions
+
+### Does TorNest need a media server?
+
+No. TorNest streams from BitTorrent peers directly on the TV device. You do not need to run a separate media server on a computer or NAS.
+
+### Can TorNest stream before a torrent finishes downloading?
+
+Yes. TorNest prioritizes pieces of the selected video for playback while downloading continues. Startup time, seeking, and buffering depend on the source and reachable peers.
+
+### Does TorNest work offline?
+
+The bundled catalogue lets you browse metadata without fetching a catalogue update. Streaming video and receiving new catalogue releases require network access. TorNest is not designed as an offline video library.
+
+### Why does a title appear but fail to play?
+
+A catalogue entry can exist even when its source has no reachable peers, lacks a usable magnet, or contains video your device cannot decode. Check the connection and try another available source. Report persistent failures with the device model, Android or Fire OS version, app version, and exported logs.
+
+### Does BitTorrent streaming upload data or expose my IP address?
+
+Yes. While participating in a swarm, your device can upload pieces to other peers, and those peers can see its network IP address. TorNest asks for sharing consent before peer-to-peer operation. Review the sharing and storage controls in Settings.
+
+### Can I open any magnet link in TorNest?
+
+TorNest's viewing flow uses sources in its catalogue. It is not presented as a general-purpose magnet-link opener. Catalogue authors can add episode sources, season packs, and show packs using the [catalogue format in the developer guide](docs/DEVELOPMENT.md#catalogue-format).
+
+### How do I update TorNest and keep my watch progress?
+
+Install a compatible release signed with the same key over the existing app. Follow the release notes and use the watch-data backup option before changing installations. Catalogue updates and APK updates are separate: a catalogue update does not update the app itself.
+
+## Build from source
+
+Use **JDK 21** (Android Studio's bundled JBR works), an Android SDK with **platform 36**, and Android Platform Tools. The Gradle wrapper manages the project's Gradle version.
+
+Create `local.properties` in the repository root with your SDK path, for example:
+
+```properties
+sdk.dir=/path/to/Android/sdk
+```
+
+Build and install a debug APK:
+
+```bash
+./gradlew :app:assembleDebug
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 adb shell am start -n com.torfilx.tv.debug/com.torfilx.tv.MainActivity
 ```
 
-Sideloading onto a Fire TV Stick:
+On Windows, use `.\gradlew.bat` in place of `./gradlew`. The package identifiers retain the earlier project name, which is why the launch command contains `com.torfilx`.
+
+Run unit tests separately:
 
 ```bash
-adb connect <fire-tv-ip>:5555
-adb install -r app/build/outputs/apk/debug/app-debug.apk
+./gradlew test
 ```
 
-## The catalogue
+For catalogue authoring, module layout, and native torrent builds, read the [developer guide](docs/DEVELOPMENT.md). Distribution builds require a persistent signing key so later APKs can update existing installations.
 
-A new install starts from `core/data/src/main/assets/catalog.json`, described by
-`catalog-manifest.json` beside it. From then on the app keeps the catalogue current from the peer
-network: the maintainer publishes signed releases with `tools/catalog-publisher`, and every release is
-verified against the publisher key built into the APK before it replaces anything. The format, the
-trust rules and the publishing runbook are in [`docs/CATALOGUE_P2P.md`](docs/CATALOGUE_P2P.md).
+## Documentation and support
 
-Each entry looks like this. `id` is the key watch progress and My List are stored under; the
-publisher pins it once, so renaming a title never loses anyone's progress:
+- [Catalogue format and source selection](docs/DEVELOPMENT.md#catalogue-format)
+- [Developer guide and module layout](docs/DEVELOPMENT.md)
+- [APK releases and upgrade notes](https://github.com/DavidSamir/TorNest/releases)
+- [Report a bug or request a feature](https://github.com/DavidSamir/TorNest/issues)
 
-```json
-[
-  {
-    "id": "catalog-the-kid-1921",
-    "title": "The Kid",
-    "year": "1921",
-    "image_url": "https://…/poster.jpg",
-    "overview": "optional",
-    "genres": ["Comedy"],
-    "runtimeMinutes": 68,
-    "magnets": [{ "quality": "720p", "magnet": "magnet:?xt=urn:btih:…" }]
-  }
-]
-```
+For a playback report, include your device model, OS version, TorNest version, the affected title or episode, and what happened. Settings can export diagnostic logs; review them for private details before posting them publicly.
 
-A show is an entry with `"type": "show"` and seasons of episodes in place of magnets. Every episode
-has its own id, because that is what the viewer's progress on it is stored under:
+## Content and sharing
 
-```json
-{
-  "id": "show-the-twilight-zone-1959",
-  "type": "show",
-  "title": "The Twilight Zone",
-  "year": "1959",
-  "image_url": "https://…/poster.jpg",
-  "backdrop_url": "https://…/backdrop.jpg",
-  "genres": ["Sci-Fi"],
-  "seasons": [
-    {
-      "number": 1,
-      "episodes": [
-        {
-          "id": "show-the-twilight-zone-1959-s01e01",
-          "number": 1,
-          "name": "Where Is Everybody?",
-          "runtimeMinutes": 25,
-          "magnets": [{ "quality": "720p", "magnet": "magnet:?xt=urn:btih:…" }]
-        }
-      ]
-    }
-  ]
-}
-```
-
-An episode's name is `"name"`, never `"title"`: the release format counts `"title"` keys to check
-that nothing was lost, and it counts one per top-level entry. Season `0` is Specials. The full rules
-are in [`docs/CATALOGUE_P2P.md`](docs/CATALOGUE_P2P.md).
-
-For a single-season torrent, put its magnet in that season's `"packs"` list. For a multi-season or
-full-show torrent, put it in a `"packs"` list on the show itself; the app shares that source across
-all listed seasons. Episode-specific `"magnets"`, season packs, and show packs can coexist. Seasons
-and episodes still need catalogue entries; adding a magnet does not discover or create those entries.
-
-Episode selection understands `S01E02`, `1x02`, `Season 1/E02`, `S02/02 - Name`, and
-`Season 2 Episode 3` names, including Windows paths, numbered partial packs, and Specials folders.
-Combined `S01E01E03` files identify episodes 1 and 3; `S01E01-E03` identifies the full range.
-Combined files play from the beginning; separate episode start times require chapter metadata.
-Samples and extras are excluded. Show packs require season evidence for episode-only names.
-Unlabelled collections are not assigned episodes by alphabetical position or file size. An
-episode-specific source can contain one unlabelled video, but conflicting episode labels or
-unmatched multi-video sources are refused and the player can try another source. Archives and
-unrecognizable names require correction; container detection does not guarantee codec support.
-
-Magnets are validated when the file loads: an entry whose `xt=urn:btih:` is not a 40-character hex
-(or 32-character base32) info hash is dropped with a log line rather than failing later in the
-player. Only content that may be freely redistributed belongs here — seeding *is* redistribution.
-
-## Module layout
-
-```
-:app                 single activity, navigation, Hilt entry points
-:core:model          domain types + pure rules (resume thresholds, source selection)
-:core:common         typed errors, dispatchers, clock, logging (with export buffer)
-:core:ui             theme, focus behaviour, cards/rows/hero/keyboard/consent dialog
-:core:data           catalogue in use + updater, Room (progress, My List, search history), settings
-:core:catalogue      pure JVM: catalogue release format, ids, Ed25519 verification, fetch sequence
-:core:catalogue-swarm pure JVM: DHT pointer, release torrents, DHT state (libtorrent, shared with the tool)
-:core:torrent        libtorrent4j engine, sequential streaming, loopback HTTP bridge, budget
-:tools:catalog-publisher  desktop CLI: keygen, pin, build, verify, publish, fetch
-:core:player         ExoPlayer factory, MediaSession service, playback state machine
-:feature:*           home, library, details, search, player, settings
-:core:testing        fixtures and fakes
-```
-
-## Notes for a real Fire TV
-
-- Display frame-rate matching (24/50/60 Hz) is on by default; turn it off in Settings if your TV
-  handles mode switches badly.
-- Tunneled playback is enabled where the device reports support (Amazon's recommendation for 4K/HDR)
-  and can be disabled in Settings if an AV receiver glitches.
-- Media keys and Alexa transport commands work through `MediaSession`.
-
-## Legal and content policy
-
-**This project is provided for personal and educational use.** It is a BitTorrent client with a TV
-interface: the application ships no media, hosts nothing, and operates no tracker or index service.
-Every title it shows comes from `core/data/src/main/assets/catalog.json`, which is supplied by
-whoever builds the app, or from a catalogue release signed with the publisher key that build trusts.
-
-The catalogue committed to this repository is intended to hold **public-domain films and episodes** — works whose
-copyright has expired and which may be freely copied and redistributed (for example Chaplin's *The
-Kid*, 1921, and *The Gold Rush*, 1925).
-
-Two things follow from how BitTorrent works, and they are worth stating plainly:
-
-- Streaming a title over BitTorrent **also uploads it** to everyone else in that swarm. Downloading
-  is receiving; seeding is *distributing*. Distributing a copyrighted film without permission is
-  unlawful in most jurisdictions, and an "educational purposes" notice in a README does not change
-  that.
-- Your home IP address is visible to every other peer sharing the same title.
-
-Because of this, sharing is **off by default** and cannot start until it has been explicitly enabled
-through the consent screen, shown once at first launch and again at Play if declined, and it can be
-turned off again at any time in Settings.
-
-Whoever populates `catalog.json` and builds or distributes the resulting APK is responsible for
-ensuring they have the right to copy and redistribute those files. The maintainers of this codebase
-are not responsible for catalogues assembled by third parties.
-
-**Testing disclaimer:** This app is provided for testing and evaluation purposes only. It is not a
-production streaming service, and it may contain unfinished features, bugs, or experimental behavior.
+Use TorNest with video you have permission to download and share. Streaming over BitTorrent can redistribute pieces of that video, so permission to view a work alone may not cover sharing it. Catalogue publishers are responsible for checking the rights to the sources they distribute. TorNest does not bundle video files or establish the rights to a work by listing it.

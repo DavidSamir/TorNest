@@ -9,7 +9,7 @@ import kotlin.system.exitProcess
 private const val TAG = "CrashGuard"
 
 /**
- * Last line of defence against Android's "TORFILX keeps stopping" dialog.
+ * Last line of defence against Android's "TorNest keeps stopping" dialog.
  *
  * On a TV that dialog is a dead end: there is no notification shade, no way to report it, and the
  * remote's only useful button is the one that closes the app. So an uncaught exception is recorded

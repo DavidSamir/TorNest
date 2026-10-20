@@ -54,7 +54,7 @@ fun TopNavBar(
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Text(
-            text = "Torfilx",
+            text = "TorNest",
             style = TorfilxType.Masthead,
             color = TorfilxColors.TextPrimary,
             modifier = Modifier.padding(end = 36.dp),

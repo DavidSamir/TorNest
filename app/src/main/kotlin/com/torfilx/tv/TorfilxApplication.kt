@@ -55,7 +55,7 @@ class TorfilxApplication : Application(), SingletonImageLoader.Factory {
     override fun onCreate() {
         super.onCreate()
         TorfilxLog.debugEnabled = BuildConfig.DEBUG
-        TorfilxLog.i(TAG, "TORFILX ${BuildConfig.VERSION_NAME} starting")
+        TorfilxLog.i(TAG, "TorNest ${BuildConfig.VERSION_NAME} starting")
 
         // Installed first: a failure anywhere after this point restarts the app instead of showing
         // the system.s "keeps stopping" dialog on the TV, and is recorded durably for the log export.
