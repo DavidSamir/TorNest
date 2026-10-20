@@ -25,12 +25,7 @@ const pages = [
         <div class="actions">${button('Get TorNest', 'install.html')}${button('Explore on GitHub', repo, true)}</div>
         <p class="hero-note">For Android-based Fire TV, Android TV &amp; Google TV.</p>
       </div>
-      <div class="hero-art" role="img" aria-label="TorNest play symbol surrounded by concentric rings, representing a peer-to-peer network">
-        <span class="art-label">DIRECT TO YOUR TV</span><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="orbit orbit-three"></div>
-        <div class="play-core"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M35 22 78 50 35 78Z" fill="currentColor"/></svg></div>
-        <span class="orbit-node node-one"></span><span class="orbit-node node-two"></span><span class="orbit-node node-three"></span>
-        <div class="art-caption"><span>PEER → PLAYER</span><span>NO SEPARATE SERVER</span></div>
-      </div>
+      <figure class="hero-preview"><img src="assets/ui-home.png" width="1920" height="1080" alt="TorNest interface preview with rounded navigation, featured title and play controls" fetchpriority="high"><figcaption>New interface preview &middot; Sample title and generated artwork.</figcaption></figure>
     </section>
     <div class="platform-strip"><div class="wrap"><span>YOUR REMOTE. YOUR SCREEN.</span><span>Fire TV</span><span>Android TV</span><span>Google TV</span><a href="compatibility.html">Check your device ${arrow}</a></div></div>
     <section class="section wrap" id="features">
@@ -40,6 +35,14 @@ const pages = [
         <article><span class="feature-number">02 / PLAY</span><h3>Start before it finishes.</h3><p>TorNest prioritizes video pieces for playback while the download continues. No separate media server required.</p></article>
         <article><span class="feature-number">03 / RETURN</span><h3>Keep your place.</h3><p>Continue Watching, episode progress, and My List stay on your device. Choose whether to autoplay the next episode.</p></article>
       </div>
+    </section>
+    <section class="interface-section wrap" aria-labelledby="interface-title">
+      <div class="section-heading"><p class="eyebrow">A FRESH VIEW</p><h2 id="interface-title">Made to feel<br><em>at home on TV.</em></h2><p>Clean typography, rounded artwork, and clear remote focus bring your library into view.</p></div>
+      <div class="preview-grid">
+        <figure><img src="assets/ui-cards.png" width="1920" height="1080" loading="lazy" decoding="async" alt="TorNest poster cards showing a bright rounded focus outline"><figcaption>Find your focus. A clear outline keeps remote navigation easy to follow.</figcaption></figure>
+        <figure><img src="assets/ui-search.png" width="1920" height="1080" loading="lazy" decoding="async" alt="TorNest search preview with rounded on-screen keyboard keys"><figcaption>Keep searching simple. Comfortable controls, built around the D-pad.</figcaption></figure>
+      </div>
+      <p class="preview-note">Component previews from the current source, with illustrative titles and generated artwork. Published APKs may use an earlier interface. See the <a href="${releases}">release notes</a> for the version you install.</p>
     </section>
     <section class="how-section"><div class="wrap how-layout"><div>${sectionLabel('02', 'BEHIND THE PLAY BUTTON')}<h2>A library on screen.<br><em>A network behind it.</em></h2><p class="muted">TorNest includes a catalogue of metadata and source references. Video comes from reachable BitTorrent peers, not bundled media files.</p><a class="text-link" href="troubleshooting.html">Understand playback ${arrow}</a></div><ol class="steps"><li><span>01</span><div><h3>Find something to watch</h3><p>Browse the built-in catalogue of films, seasons, and episodes.</p></div></li><li><span>02</span><div><h3>Connect to peers</h3><p>After you accept sharing, the app finds peers for the selected source.</p></div></li><li><span>03</span><div><h3>Stream as pieces arrive</h3><p>Playback begins as video downloads. Speed and buffering depend on peers and your connection.</p></div></li></ol></div></section>
     <section class="section wrap faq-layout"><div>${sectionLabel('03', 'A FEW GOOD QUESTIONS')}<h2>Before you<br><em>press play.</em></h2></div><div>
@@ -102,7 +105,7 @@ function layout(page) {
   } : { '@context': 'https://schema.org', '@type': 'WebPage', name: page.title, description: page.description, url: canonical };
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${escape(page.title)}</title><meta name="description" content="${escape(page.description)}"><meta name="theme-color" content="#151413">
+<title>${escape(page.title)}</title><meta name="description" content="${escape(page.description)}"><meta name="theme-color" content="#0b0c10">
 <link rel="canonical" href="${canonical}"><link rel="icon" type="image/png" href="assets/icon.png"><link rel="stylesheet" href="assets/style.css">
 <meta property="og:type" content="website"><meta property="og:site_name" content="TorNest"><meta property="og:title" content="${escape(page.title)}"><meta property="og:description" content="${escape(page.description)}"><meta property="og:url" content="${canonical}"><meta property="og:image" content="${social}"><meta property="og:image:alt" content="TorNest — Your library. Your living room.">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${escape(page.title)}"><meta name="twitter:description" content="${escape(page.description)}"><meta name="twitter:image" content="${social}">
@@ -116,7 +119,7 @@ function layout(page) {
 await rm(out, { recursive: true, force: true });
 await mkdir(path.join(out, 'assets'), { recursive: true });
 for (const page of pages) await writeFile(path.join(out, page.file), layout(page));
-for (const file of ['style.css', 'site.js', 'social.png']) await copyFile(path.join(root, 'assets', file), path.join(out, 'assets', file));
+for (const file of ['style.css', 'site.js', 'social.png', 'ui-home.png', 'ui-cards.png', 'ui-search.png']) await copyFile(path.join(root, 'assets', file), path.join(out, 'assets', file));
 await copyFile(path.join(root, '../app/src/main/res/mipmap-xxxhdpi/ic_launcher.png'), path.join(out, 'assets/icon.png'));
 await writeFile(path.join(out, '.nojekyll'), '');
 await writeFile(path.join(out, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${pages.map(p => `<url><loc>${new URL(p.file === 'index.html' ? '' : p.file, base).href}</loc></url>`).join('')}</urlset>\n`);
