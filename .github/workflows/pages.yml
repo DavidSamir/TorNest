@@ -30,6 +30,9 @@ jobs:
         with:
           node-version: '22'
       - name: Build static website
+        env:
+          # The repository Actions variable can override the site's GA4 web stream.
+          GA_MEASUREMENT_ID: ${{ vars.GA_MEASUREMENT_ID || 'G-3XDG3KCXP6' }}
         run: node website/build.mjs
       - name: Check pages and local links
         run: node website/check.mjs

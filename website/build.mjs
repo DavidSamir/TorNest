@@ -7,6 +7,17 @@ const root = path.dirname(fileURLToPath(import.meta.url));
 const out = path.join(root, 'dist');
 const styleVersion = createHash('sha256').update(await readFile(path.join(root, 'assets/style.css'))).digest('hex').slice(0, 12);
 const colorScheme = '<meta name="color-scheme" content="dark">';
+const measurementId = (process.env.GA_MEASUREMENT_ID ?? 'G-3XDG3KCXP6').trim();
+if (measurementId && !/^G-[A-Z0-9]+$/.test(measurementId)) {
+  throw new Error('GA_MEASUREMENT_ID must be a GA4 Measurement ID starting with G-');
+}
+const analytics = measurementId ? `<script async src="https://www.googletagmanager.com/gtag/js?id=${measurementId}"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', '${measurementId}');
+</script>` : '';
 const base = new URL(process.env.SITE_URL || 'https://davidsamir.github.io/TorNest/');
 if (!base.pathname.endsWith('/')) base.pathname += '/';
 const repo = 'https://github.com/DavidSamir/TorNest';
@@ -108,6 +119,7 @@ function layout(page) {
   } : { '@context': 'https://schema.org', '@type': 'WebPage', name: page.title, description: page.description, url: canonical };
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+${analytics}
 <title>${escape(page.title)}</title><meta name="description" content="${escape(page.description)}"><meta name="theme-color" content="#0b0c10">${colorScheme}
 <link rel="canonical" href="${canonical}"><link rel="icon" type="image/png" href="assets/icon.png"><link rel="stylesheet" href="assets/style.css?v=${styleVersion}">
 <meta property="og:type" content="website"><meta property="og:site_name" content="TorNest"><meta property="og:title" content="${escape(page.title)}"><meta property="og:description" content="${escape(page.description)}"><meta property="og:url" content="${canonical}"><meta property="og:image" content="${social}"><meta property="og:image:alt" content="TorNest — Your library. Your living room.">
