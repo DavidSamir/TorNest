@@ -1,9 +1,12 @@
-import { mkdir, writeFile, copyFile, rm } from 'node:fs/promises';
+import { mkdir, writeFile, copyFile, rm, readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const out = path.join(root, 'dist');
+const styleVersion = createHash('sha256').update(await readFile(path.join(root, 'assets/style.css'))).digest('hex').slice(0, 12);
+const colorScheme = '<meta name="color-scheme" content="dark">';
 const base = new URL(process.env.SITE_URL || 'https://davidsamir.github.io/TorNest/');
 if (!base.pathname.endsWith('/')) base.pathname += '/';
 const repo = 'https://github.com/DavidSamir/TorNest';
@@ -105,8 +108,8 @@ function layout(page) {
   } : { '@context': 'https://schema.org', '@type': 'WebPage', name: page.title, description: page.description, url: canonical };
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${escape(page.title)}</title><meta name="description" content="${escape(page.description)}"><meta name="theme-color" content="#0b0c10">
-<link rel="canonical" href="${canonical}"><link rel="icon" type="image/png" href="assets/icon.png"><link rel="stylesheet" href="assets/style.css">
+<title>${escape(page.title)}</title><meta name="description" content="${escape(page.description)}"><meta name="theme-color" content="#0b0c10">${colorScheme}
+<link rel="canonical" href="${canonical}"><link rel="icon" type="image/png" href="assets/icon.png"><link rel="stylesheet" href="assets/style.css?v=${styleVersion}">
 <meta property="og:type" content="website"><meta property="og:site_name" content="TorNest"><meta property="og:title" content="${escape(page.title)}"><meta property="og:description" content="${escape(page.description)}"><meta property="og:url" content="${canonical}"><meta property="og:image" content="${social}"><meta property="og:image:alt" content="TorNest — Your library. Your living room.">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${escape(page.title)}"><meta name="twitter:description" content="${escape(page.description)}"><meta name="twitter:image" content="${social}">
 <script type="application/ld+json">${JSON.stringify(schema).replaceAll('<', '\\u003c')}</script><script src="assets/site.js" defer></script></head>
@@ -123,5 +126,5 @@ for (const file of ['style.css', 'site.js', 'social.png', 'ui-home.png', 'ui-car
 await copyFile(path.join(root, '../app/src/main/res/mipmap-xxxhdpi/ic_launcher.png'), path.join(out, 'assets/icon.png'));
 await writeFile(path.join(out, '.nojekyll'), '');
 await writeFile(path.join(out, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${pages.map(p => `<url><loc>${new URL(p.file === 'index.html' ? '' : p.file, base).href}</loc></url>`).join('')}</urlset>\n`);
-await writeFile(path.join(out, '404.html'), `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Page not found — TorNest</title><meta name="robots" content="noindex"><link rel="stylesheet" href="${base.pathname}assets/style.css"></head><body><main class="page-hero wrap"><p class="eyebrow">404 / PAGE NOT FOUND</p><h1>Let’s get you<br><em>back home.</em></h1><p>This address does not match a page on the TorNest website.</p>${button('TorNest home', base.pathname)}</main></body></html>\n`);
+await writeFile(path.join(out, '404.html'), `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Page not found — TorNest</title><meta name="robots" content="noindex">${colorScheme}<meta name="theme-color" content="#0b0c10"><link rel="stylesheet" href="${base.pathname}assets/style.css?v=${styleVersion}"></head><body><main class="page-hero wrap"><p class="eyebrow">404 / PAGE NOT FOUND</p><h1>Let’s get you<br><em>back home.</em></h1><p>This address does not match a page on the TorNest website.</p>${button('TorNest home', base.pathname)}</main></body></html>\n`);
 console.log(`Built ${pages.length} pages in ${out}`);
