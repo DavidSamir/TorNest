@@ -48,3 +48,6 @@ temp-fetch/
 !/scripts/publish-catalog/README.md
 torfilx-release.jks.txt
 scripts/publish-catalog
+
+# Generated GitHub Pages output
+/website/dist/

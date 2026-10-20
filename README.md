@@ -2,7 +2,7 @@
 
 TorNest is a TV app for browsing a catalogue of movies and TV shows and streaming video over BitTorrent. Built for Android-based Fire TV, Android TV, and Google TV devices, it works with your remote and keeps watch progress on your device. No separate media server is required.
 
-**[Releases and APK downloads](https://github.com/DavidSamir/TorNest/releases) · [Installation](#install-tornest) · [Device compatibility](#device-compatibility) · [FAQ](#frequently-asked-questions) · [Build from source](#build-from-source)**
+**[Website](https://davidsamir.github.io/TorNest/) · [Releases and APK downloads](https://github.com/DavidSamir/TorNest/releases) · [Installation](#install-tornest) · [Device compatibility](#device-compatibility) · [FAQ](#frequently-asked-questions) · [Build from source](#build-from-source)**
 
 ## Why use TorNest?
 

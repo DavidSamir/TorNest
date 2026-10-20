@@ -2,6 +2,22 @@
 
 This guide covers catalogue authoring, project modules, and native torrent builds. Start with the [TorNest README](../README.md) for installation and build commands.
 
+## Website and GitHub Pages
+
+The public website source is in `website/`. It uses Node.js 22 and has no package dependencies. To build, check, and preview it locally:
+
+```bash
+node website/build.mjs
+node website/check.mjs
+node website/serve.mjs
+```
+
+Open `http://127.0.0.1:4173/TorNest/`. Stop the preview with Ctrl+C. Edit page content in `website/build.mjs`, styling in `website/assets/style.css`, and the copy-command interaction in `website/assets/site.js`. Rebuild to see changes. `website/dist/` is generated and stays out of Git.
+
+GitHub Pages must use **GitHub Actions** as its source under repository **Settings → Pages**. The `Deploy TorNest website` workflow validates pull requests and publishes website changes pushed to `main`; it can also be run manually from Actions. It uploads only `website/dist/`.
+
+The default public address is `https://davidsamir.github.io/TorNest/`. If the address changes, set `SITE_URL` when building and update links to the website. The build uses that URL for canonicals, social metadata, the sitemap, and the 404 page. For search reporting, verify the website's URL prefix with Google Search Console and Bing Webmaster Tools, then submit `sitemap.xml`. No analytics or tracking scripts are included by default.
+
 ## Catalogue format
 
 A new install starts from `core/data/src/main/assets/catalog.json`, described by
