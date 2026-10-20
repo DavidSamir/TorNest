@@ -255,6 +255,20 @@ jobs:
               echo "Install over an existing 1.0.x release to keep watch progress and My List. Signed with the existing release key."
               echo ""
             fi
+            if [ "$GITHUB_REF_NAME" = "v1.1.0" ]; then
+              echo "**Meet TorNest: a new name and a new TV interface**"
+              echo ""
+              echo "Torfilx is now TorNest. This release brings a cinematic dark layout, clean typography, rounded artwork and controls, clearer remote focus, and refreshed browsing, search, details, settings, and playback screens."
+              echo ""
+              echo "Featured titles advance when you choose Next feature. Motion settings apply to artwork transitions, and loading placeholders stay still."
+              echo ""
+              echo "Install over an existing stable 1.0.x release to keep watch progress and My List. The Android package and signing key are unchanged. The APK filename remains torfilx-release.apk so existing download links keep working."
+              echo ""
+              echo "Automated checks cover remote navigation, focus containment, unit tests, lint, and device-emulator tests. Physical Fire TV frame-time and streaming performance profiling remains pending; this release does not claim a measured performance improvement."
+              echo ""
+              echo "Website, installation help, and contribution guidelines are available at https://davidsamir.github.io/TorNest/."
+              echo ""
+            fi
             echo "**Sideload onto a Fire TV**"
             echo ""
             echo "In the Downloader app, enter:"
@@ -280,6 +294,7 @@ jobs:
           files: |
             dist/torfilx-release.apk
             dist/torfilx-release.apk.sha256
+          name: TorNest ${{ github.ref_name }}
           generate_release_notes: true
           # Every tagged build is published as a full release and becomes "Latest".
           #
