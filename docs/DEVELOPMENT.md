@@ -1,6 +1,6 @@
 # TorNest developer guide
 
-This guide covers catalogue authoring, project modules, and native torrent builds. Start with the [TorNest README](../README.md) for installation and build commands.
+This guide covers catalogue authoring, project modules, and native torrent builds. Read the [setup and technical guide](SETUP.md) for installation, device requirements, troubleshooting, and build commands. The [TorNest README](../README.md) introduces the app.
 
 ## Website and GitHub Pages
 

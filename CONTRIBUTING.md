@@ -17,7 +17,7 @@ Thanks for helping improve TorNest. You can contribute bug reports, documentatio
 4. For code changes, build the affected app or modules and run relevant tests. Add or update tests when behavior changes need coverage. Documentation-only changes should have working links and accurate instructions.
 5. For UI or playback changes, include screenshots or device-test results where useful. State the device and OS you tested, and distinguish tested behavior from expected compatibility.
 
-See the [README](README.md#build-from-source) for build commands and the [developer guide](docs/DEVELOPMENT.md) for the project layout. On Windows, use `.\gradlew.bat` instead of `./gradlew`.
+See the [setup guide](docs/SETUP.md#build-from-source) for build commands and the [developer guide](docs/DEVELOPMENT.md) for the project layout. On Windows, use `.\gradlew.bat` instead of `./gradlew`.
 
 ## Contribution rules
 
